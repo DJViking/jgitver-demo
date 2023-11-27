@@ -17,11 +17,15 @@ jobs:
           fetch-depth: 0
           fetch-tags: true
 
-      # The latest tag is needed to build the release tag.
-      # actions/checkout fails to fetch it properly.
-      # https://github.com/actions/checkout/issues/882
-      - name: Checkout with tags
-        run: git fetch --depth=1 origin +refs/tags/*:refs/tags/* # WA: https://github.com/actions/checkout/issues/882
+      # The checkout action in previous step overwrites annonated tag
+      # with lightweight tags breaking ``git describe``
+      # See https://github.com/actions/checkout/issues/882
+      # and https://github.com/actions/checkout/issues/290
+      # The following step is a workaround to restore the latest tag
+      # to it's original state.
+      - name: Restore (annonated) tag
+        run: git fetch --force origin ${GITHUB_REF}:${GITHUB_REF}
+        if: ${{ github.ref_type == 'tag' }}
 
       - name: Setup Java and Maven
         uses: actions/setup-java@v3
