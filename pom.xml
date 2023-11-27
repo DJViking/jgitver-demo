@@ -1,0 +1,299 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>3.1.5</version>
+        <relativePath/> <!-- lookup parent from repository -->
+    </parent>
+
+    <groupId>no.smeaworks</groupId>
+    <artifactId>jgitver-demo</artifactId>
+    <version>1.0.0-SNAPSHOT</version>
+    <packaging>jar</packaging>
+
+    <name>jgitver demo</name>
+    <description>jgitver demo</description>
+
+    <scm>
+        <connection>scm:git:https://github.com/tineikt/java-${project.name}</connection>
+        <developerConnection>scm:git:https://github.com/tineikt/java-${project.name}</developerConnection>
+        <url>https://github.com/tineikt/java-${project.name}</url>
+        <tag>HEAD</tag>
+    </scm>
+
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+        <java.version>21</java.version>
+        <kotlin.version>1.8.22</kotlin.version>
+        <spring-cloud.version>2021.0.8</spring-cloud.version>
+        <sonar.language>java</sonar.language>
+        <sonar.java.coveragePlugin>jacoco</sonar.java.coveragePlugin>
+        <sonar.dynamicAnalysis>reuseReports</sonar.dynamicAnalysis>
+        <sonar.coverage.jacoco.xmlReportPaths>${project.build.directory}/jacoco.xml</sonar.coverage.jacoco.xmlReportPaths>
+        <sonar.tests>src/test/java</sonar.tests>
+        <sonar.jacoco.reportsPaths>${project.build.directory}/jacoco-ut.exec</sonar.jacoco.reportsPaths>
+        <docker.publishRegistry.url>localhost:9010</docker.publishRegistry.url>
+        <docker.publishRegistry.username>username</docker.publishRegistry.username>
+        <docker.publishRegistry.password>secret</docker.publishRegistry.password>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-netflix-eureka-client</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-stream-rabbit</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.micrometer</groupId>
+            <artifactId>micrometer-registry-prometheus</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.httpcomponents.client5</groupId>
+            <artifactId>httpclient5</artifactId>
+            <version>5.2.1</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <optional>true</optional>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.springframework.cloud</groupId>
+                <artifactId>spring-cloud-dependencies</artifactId>
+                <version>${spring-cloud.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+    <build>
+        <finalName>app</finalName>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>3.3.0</version>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.11.0</version>
+                <configuration>
+                    <release>${java.version}</release>
+                    <source>${java.version}</source>
+                    <target>${java.version}</target>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>2.22.2</version>
+            </plugin>
+            <plugin>
+                <groupId>org.sonarsource.scanner.maven</groupId>
+                <artifactId>sonar-maven-plugin</artifactId>
+                <version>3.8.0.2131</version>
+            </plugin>
+            <plugin>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+                <version>0.8.10</version>
+                <executions>
+                    <execution>
+                        <id>default-prepare-agent</id>
+                        <goals>
+                            <goal>prepare-agent</goal>
+                        </goals>
+                        <configuration>
+                            <destFile>${project.build.directory}/jacoco-ut.exec</destFile>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>default-report</id>
+                        <goals>
+                            <goal>report</goal>
+                        </goals>
+                        <configuration>
+                            <dataFile>${project.build.directory}/jacoco-ut.exec</dataFile>
+                            <outputEncoding>UTF-8</outputEncoding>
+                            <outputDirectory>${project.build.directory}</outputDirectory>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>default-check</id>
+                        <goals>
+                            <goal>check</goal>
+                        </goals>
+                        <configuration>
+                            <dataFile>${project.build.directory}/jacoco-ut.exec</dataFile>
+                            <rules>
+                                <rule>
+                                    <element>BUNDLE</element>
+                                    <limits>
+                                        <limit>
+                                            <counter>INSTRUCTION</counter>
+                                            <value>COVEREDRATIO</value>
+                                            <minimum>0.00</minimum>
+                                        </limit>
+                                    </limits>
+                                </rule>
+                            </rules>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.graalvm.buildtools</groupId>
+                <artifactId>native-maven-plugin</artifactId>
+                <configuration>
+                    <buildArgs>-H:+AddAllCharsets --report-unsupported-elements-at-runtime</buildArgs>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <configuration>
+                    <excludes>
+                        <exclude>
+                            <groupId>org.projectlombok</groupId>
+                            <artifactId>lombok</artifactId>
+                        </exclude>
+                    </excludes>
+                    <image>
+                        <builder>paketobuildpacks/builder-jammy-tiny</builder>
+                        <name>${docker.publishRegistry.url}/tineikt/nmr/avregning/${project.name}:${project.version}</name>
+                        <createdDate>${maven.build.timestamp}</createdDate>
+                        <cleanCache>true</cleanCache>
+                        <env>
+                            <BP_NATIVE_IMAGE>false</BP_NATIVE_IMAGE>
+                            <BP_JVM_VERSION>${java.version}</BP_JVM_VERSION>
+                            <BP_OCI_SOURCE>${project.scm.url}</BP_OCI_SOURCE>
+                            <BP_OCI_CREATED>${maven.build.timestamp}</BP_OCI_CREATED>
+                            <BP_OCI_VERSION>${project.version}</BP_OCI_VERSION>
+                            <BP_OCI_DESCRIPTION>${project.description}</BP_OCI_DESCRIPTION>
+                        </env>
+                    </image>
+                </configuration>
+            </plugin>
+            <plugin>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <phase>validate</phase>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                        <configuration>
+                            <target>
+                                <echo>used version: ${jgitver.used_version}</echo>
+                                <echo>version calculated: ${jgitver.calculated_version}</echo>
+                                <echo>dirty: ${jgitver.dirty}</echo>
+                                <echo>head_committer_name: ${jgitver.head_committer_name}</echo>
+                                <echo>head_commiter_email: ${jgitver.head_commiter_email}</echo>
+                                <echo>head_commit_datetime: ${jgitver.head_commit_datetime}</echo>
+                                <echo>git_sha1_full: ${jgitver.git_sha1_full}</echo>
+                                <echo>git_sha1_8: ${jgitver.git_sha1_8}</echo>
+                                <echo>branch_name: ${jgitver.branch_name}</echo>
+                                <echo>head_tags: ${jgitver.head_tags}</echo>
+                                <echo>head_annotated_tags: ${jgitver.head_annotated_tags}</echo>
+                                <echo>head_lightweight_tags: ${jgitver.head_lightweight_tags}</echo>
+                                <echo>base_tag: ${jgitver.base_tag}</echo>
+                                <echo>all_tags: ${jgitver.all_tags}</echo>
+                                <echo>all_annotated_tags: ${jgitver.all_annotated_tags}</echo>
+                                <echo>all_lightweight_tags: ${jgitver.all_lightweight_tags}</echo>
+                                <echo>all_version_tags: ${jgitver.all_version_tags}</echo>
+                                <echo>all_version_annotated_tags: ${jgitver.all_version_annotated_tags}</echo>
+                                <echo>all_version_lightweight_tags: ${jgitver.all_version_lightweight_tags}</echo>
+                            </target>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
+    <profiles>
+        <profile>
+            <id>buildImage</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.springframework.boot</groupId>
+                        <artifactId>spring-boot-maven-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <goals>
+                                    <goal>build-image-no-fork</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
+            <id>publishImage</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.springframework.boot</groupId>
+                        <artifactId>spring-boot-maven-plugin</artifactId>
+                        <configuration>
+                            <docker>
+                                <publishRegistry>
+                                    <url>${docker.publishRegistry.url}</url>
+                                    <username>${docker.publishRegistry.username}</username>
+                                    <password>${docker.publishRegistry.password}</password>
+                                </publishRegistry>
+                            </docker>
+                            <image>
+                                <publish>true</publish>
+                            </image>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+</project>
