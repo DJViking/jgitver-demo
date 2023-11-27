@@ -16,6 +16,13 @@ jobs:
         with:
           fetch-depth: 0
           fetch-tags: true
+
+      # The latest tag is needed to build the release tag.
+      # actions/checkout fails to fetch it properly.
+      # https://github.com/actions/checkout/issues/882
+      - name: Checkout with tags
+        run: git fetch --depth=1 origin +refs/tags/*:refs/tags/* # WA: https://github.com/actions/checkout/issues/882
+
       - name: Setup Java and Maven
         uses: actions/setup-java@v3
         with:
